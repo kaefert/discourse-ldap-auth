@@ -56,7 +56,10 @@ class LDAPAuthenticator < ::Auth::Authenticator
         match[:name] = match[:name] || auth_info[:name]
         return LDAPUser.new(match).auth_result
       when 'auto'
-        return LDAPUser.new(auth_info).auth_result
+        ldap_user = LDAPUser.new(auth_info)
+        group = Group.find_by(name: 'redeemer-user')
+        ldap_user.user.groups |= [group] unless group.nil?
+        return ldap_user.auth_result
       else
         return fail_auth('Invalid option for ldap_user_create_mode setting.')
     end
